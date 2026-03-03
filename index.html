@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mino – AI Note Taker | Never Take Notes Again</title>
+  <meta name="description" content="Mino is the AI note-taker that turns messy thoughts into structured Cornell notes. 1M+ users. 4.7 stars. 100% private." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: '#1570EF',
+            'brand-dark': '#1050C0',
+            'brand-light': '#EBF3FF',
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Scroll-reveal animations */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(36px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .fade-up.delay-1 { transition-delay: 0.12s; }
+    .fade-up.delay-2 { transition-delay: 0.24s; }
+    .fade-up.delay-3 { transition-delay: 0.36s; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fade-up { opacity: 1; transform: none; transition: none; }
+    }
+
+    /* Gradient text */
+    .text-gradient {
+      background: linear-gradient(135deg, #1570EF 0%, #38BDF8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Noise texture on hero */
+    .hero-bg {
+      background: radial-gradient(ellipse 80% 60% at 60% 0%, #c7deff 0%, #ebf3ff 40%, #f8faff 100%);
+    }
+
+    /* Phone glow */
+    .phone-glow::before {
+      content: '';
+      position: absolute;
+      inset: -20px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(21,112,239,0.2) 0%, transparent 70%);
+      z-index: 0;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+    /* Cornell note styling */
+    .cornell-grid {
+      display: grid;
+      grid-template-columns: 2fr 3fr;
+    }
+  </style>
+</head>
+
+<body class="font-sans bg-white text-gray-900 antialiased overflow-x-hidden">
+
+  <!-- ═══════════════════════════════════════════
+       FLOATING NAVBAR
+  ═══════════════════════════════════════════ -->
+  <nav class="fixed top-4 left-4 right-4 z-50 max-w-6xl mx-auto">
+    <div class="bg-white/85 backdrop-blur-xl border border-gray-200/80 rounded-2xl px-5 py-3 flex items-center justify-between shadow-sm shadow-gray-200/50">
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-2.5 cursor-pointer">
+        <div class="w-8 h-8 bg-brand rounded-[10px] flex items-center justify-center shadow-sm">
+          <svg viewBox="0 0 24 24" class="w-4.5 h-4.5 text-white w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3z"/>
+          </svg>
+        </div>
+        <span class="font-extrabold text-[17px] tracking-tight text-gray-900">Mino</span>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <div class="hidden md:flex items-center gap-7 text-[13.5px] font-medium text-gray-500">
+        <a href="#features" class="hover:text-brand transition-colors duration-150 cursor-pointer">Features</a>
+        <a href="#how-it-works" class="hover:text-brand transition-colors duration-150 cursor-pointer">How it works</a>
+        <a href="#privacy" class="hover:text-brand transition-colors duration-150 cursor-pointer">Privacy</a>
+      </div>
+
+      <!-- CTA -->
+      <a href="#download" class="bg-brand hover:bg-brand-dark text-white text-[13.5px] font-semibold px-5 py-2.5 rounded-xl transition-colors duration-200 cursor-pointer shadow-sm shadow-brand/30">
+        Get Mino Free
+      </a>
+    </div>
+  </nav>
+
+
+  <!-- ═══════════════════════════════════════════
+       HERO SECTION
+  ═══════════════════════════════════════════ -->
+  <section class="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden hero-bg">
+    <!-- Decorative blobs -->
+    <div class="absolute top-16 right-[-80px] w-[480px] h-[480px] bg-brand/8 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-0 left-[-60px] w-[360px] h-[360px] bg-blue-200/40 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative max-w-6xl mx-auto px-6 w-full">
+      <div class="grid lg:grid-cols-2 gap-10 items-center">
+
+        <!-- Left: Copy -->
+        <div class="fade-up">
+          <!-- Social proof badge -->
+          <div class="inline-flex items-center gap-3 bg-white border border-gray-200 rounded-full px-4 py-2 text-sm font-medium shadow-sm mb-8">
+            <div class="flex items-center gap-1">
+              <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <span class="text-gray-700 font-semibold">4.7</span>
+            <span class="w-px h-3.5 bg-gray-200"></span>
+            <span class="text-gray-500">1M+ Users</span>
+          </div>
+
+          <!-- Headline -->
+          <h1 class="text-[52px] md:text-[62px] font-extrabold leading-[1.08] tracking-[-1.5px] text-gray-900 mb-6">
+            Notes that<br />
+            grow with you.<br />
+            <span class="text-gradient">Meet Mino.</span>
+          </h1>
+
+          <!-- Sub-headline -->
+          <p class="text-[17px] text-gray-500 leading-relaxed mb-8 max-w-[480px]">
+            The first AI note-taker that turns messy thoughts into structured Cornell notes.
+            Fast, private, and built for your mobile workflow.
+          </p>
+
+          <!-- Use-case pills -->
+          <div class="flex flex-wrap gap-2 mb-10">
+            <span class="bg-white/80 border border-gray-200 text-gray-600 text-[13px] font-medium px-3.5 py-1.5 rounded-full shadow-sm">Online Meetings</span>
+            <span class="bg-white/80 border border-gray-200 text-gray-600 text-[13px] font-medium px-3.5 py-1.5 rounded-full shadow-sm">Lectures</span>
+            <span class="bg-white/80 border border-gray-200 text-gray-600 text-[13px] font-medium px-3.5 py-1.5 rounded-full shadow-sm">Videos</span>
+            <span class="bg-white/80 border border-gray-200 text-gray-600 text-[13px] font-medium px-3.5 py-1.5 rounded-full shadow-sm">Podcasts</span>
+          </div>
+
+          <!-- Download CTAs -->
+          <div class="flex flex-wrap gap-3">
+            <a href="https://apps.apple.com/us/app/mino-note-taker-voice-notes/id6723891452" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 bg-gray-900 hover:bg-gray-800 text-white px-6 py-3.5 rounded-[14px] transition-colors duration-200 cursor-pointer shadow-lg shadow-gray-900/20">
+              <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="currentColor">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+              </svg>
+              <div>
+                <div class="text-[11px] opacity-60 leading-none mb-0.5">Download on the</div>
+                <div class="text-[14px] font-bold leading-none">App Store</div>
+              </div>
+            </a>
+            <a href="https://play.google.com/store/apps/details?id=co.vulcanlabs.ainotetaker&pli=1" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 bg-gray-900 hover:bg-gray-800 text-white px-6 py-3.5 rounded-[14px] transition-colors duration-200 cursor-pointer shadow-lg shadow-gray-900/20">
+              <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="currentColor">
+                <path d="M3.18 23.73c.28.16.59.22.91.18l13.07-7.57-2.9-2.9-11.08 10.29zm16.49-10.85L16.96 11l-3.14 3.14 2.9 2.9 2.95-1.71c.84-.49.84-1.96 0-2.45zM2.11 1.05C1.82 1.36 1.67 1.82 1.67 2.4V21.6c0 .58.15 1.04.44 1.35l.07.07L13.27 12 2.18.98l-.07.07zm11.9 10.21L3.18 1.27c-.28-.16-.59-.22-.91-.18l13.07 7.57-2.33 2.6z"/>
+              </svg>
+              <div>
+                <div class="text-[11px] opacity-60 leading-none mb-0.5">Get it on</div>
+                <div class="text-[14px] font-bold leading-none">Google Play</div>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Right: Dual Phone Mockups -->
+        <div class="fade-up delay-2 flex justify-center lg:justify-end">
+          <div class="relative flex items-end gap-[-16px]">
+            <!-- Glow -->
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div class="w-72 h-72 bg-brand/15 rounded-full blur-3xl"></div>
+            </div>
+            <!-- Primary phone -->
+            <div class="relative z-10">
+              <img
+                src="A' - SS1.png"
+                alt="Mino app showing AI note-taking interface"
+                class="w-[200px] md:w-[240px] rounded-[32px] shadow-2xl shadow-gray-900/20"
+              />
+            </div>
+            <!-- Secondary phone offset -->
+            <div class="relative z-0 -ml-8 -mb-4 opacity-80">
+              <img
+                src="A - SS2.png"
+                alt="Mino app showing private and secure recording"
+                class="w-[180px] md:w-[210px] rounded-[28px] shadow-xl shadow-gray-900/15"
+              />
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       STATS BAR
+  ═══════════════════════════════════════════ -->
+  <section class="bg-brand py-10">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
+        <div>
+          <div class="text-3xl md:text-4xl font-extrabold tracking-tight">1M+</div>
+          <div class="text-blue-200 text-[13px] mt-1.5 font-medium">Happy Users</div>
+        </div>
+        <div>
+          <div class="text-3xl md:text-4xl font-extrabold tracking-tight">4.7★</div>
+          <div class="text-blue-200 text-[13px] mt-1.5 font-medium">App Store Rating</div>
+        </div>
+        <div>
+          <div class="text-3xl md:text-4xl font-extrabold tracking-tight">50+</div>
+          <div class="text-blue-200 text-[13px] mt-1.5 font-medium">Languages Supported</div>
+        </div>
+        <div>
+          <div class="text-3xl md:text-4xl font-extrabold tracking-tight">100%</div>
+          <div class="text-blue-200 text-[13px] mt-1.5 font-medium">Private & Secure</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       PROBLEM / SOLUTION
+  ═══════════════════════════════════════════ -->
+  <section id="how-it-works" class="py-24 bg-white">
+    <div class="max-w-6xl mx-auto px-6">
+
+      <div class="text-center mb-14 fade-up">
+        <span class="inline-block text-brand text-[12px] font-bold uppercase tracking-[0.15em] bg-brand-light px-3.5 py-1.5 rounded-full mb-4">The Problem</span>
+        <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">From Chaos to Clarity.</h2>
+        <p class="text-gray-500 mt-4 max-w-lg mx-auto text-lg leading-relaxed">
+          Stop drowning in transcripts. Mino distills the noise so you only keep what matters.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-5">
+
+        <!-- Before: The Mess -->
+        <div class="fade-up rounded-3xl border border-red-100 bg-red-50/60 p-7 md:p-8">
+          <div class="flex items-center gap-2.5 mb-5">
+            <div class="w-7 h-7 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </div>
+            <span class="font-bold text-red-700 text-base">Standard AI Transcript</span>
+          </div>
+          <div class="bg-white border border-red-100/80 rounded-2xl p-5 text-[13px] text-gray-500 leading-[1.8] font-mono">
+            <p class="text-gray-400 text-[11px] mb-3 font-sans">transcript_meeting_q4.txt — 47 minutes</p>
+            <p>so uh yeah like I was saying we need to think about the marketing strategy and um maybe we should post more on social but also the SEO thing Sarah mentioned in like the last meeting or was it the one before...</p>
+            <p class="mt-2">...anyway like we have the budget thing to figure out and John said something about Q4 I think it was about 15k but then again the numbers Lisa sent were different so we should probably sync up before the deadline which I think is Friday but let me double-check my calendar...</p>
+            <p class="mt-2 text-gray-400">— [continues for 43 more minutes] —</p>
+          </div>
+          <p class="mt-4 text-red-500 text-[13px] font-semibold flex items-center gap-1.5">
+            <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 8v4m0 4h.01"/></svg>
+            Unstructured. Noisy. Impossible to review.
+          </p>
+        </div>
+
+        <!-- After: The Mino Way -->
+        <div class="fade-up delay-1 rounded-3xl border border-brand/20 bg-brand-light/60 p-7 md:p-8">
+          <div class="flex items-center gap-2.5 mb-5">
+            <div class="w-7 h-7 bg-brand/15 rounded-full flex items-center justify-center flex-shrink-0">
+              <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-brand" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+              </svg>
+            </div>
+            <span class="font-bold text-brand text-base">Mino Cornell Notes</span>
+          </div>
+
+          <!-- Cornell Note Card -->
+          <div class="bg-white border border-brand/15 rounded-2xl overflow-hidden text-[13px]">
+            <!-- Header -->
+            <div class="bg-brand px-5 py-3 flex items-center justify-between">
+              <p class="text-white font-semibold">Marketing Sync – Q4 Strategy</p>
+              <span class="text-blue-200 text-[11px]">00:47:12</span>
+            </div>
+            <!-- Cornell Grid -->
+            <div class="grid grid-cols-5 divide-x divide-gray-100">
+              <div class="col-span-2 p-4 bg-blue-50/40">
+                <p class="text-brand font-bold text-[10px] uppercase tracking-widest mb-3">Cues</p>
+                <ul class="space-y-2.5 text-gray-700 font-medium text-[12.5px]">
+                  <li>Marketing Strategy</li>
+                  <li>SEO Keywords</li>
+                  <li>Budget Q4</li>
+                  <li>Action Deadline</li>
+                </ul>
+              </div>
+              <div class="col-span-3 p-4">
+                <p class="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-3">Notes</p>
+                <ul class="space-y-2 text-gray-600 text-[12px] leading-relaxed">
+                  <li>• Increase social media post frequency</li>
+                  <li>• SEO focus: use keywords from Sarah's research</li>
+                  <li>• Q4 budget: $15k (verify with Lisa's figures)</li>
+                  <li>• Deadline: Friday EOD — confirm calendar</li>
+                </ul>
+              </div>
+            </div>
+            <!-- Summary -->
+            <div class="border-t border-gray-100 p-4 bg-gray-50/60">
+              <p class="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-1.5">Summary</p>
+              <p class="text-gray-700 text-[12px] leading-relaxed">Team to align on Q4 marketing: social strategy, SEO, $15k budget. Cross-check figures with Lisa before Friday deadline.</p>
+            </div>
+          </div>
+
+          <p class="mt-4 text-brand text-[13px] font-semibold flex items-center gap-1.5">
+            <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Structured. Clear. Immediately actionable.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       FEATURES
+  ═══════════════════════════════════════════ -->
+  <section id="features" class="py-24 bg-[#F8FAFF]">
+    <div class="max-w-6xl mx-auto px-6">
+
+      <div class="text-center mb-16 fade-up">
+        <span class="inline-block text-brand text-[12px] font-bold uppercase tracking-[0.15em] bg-brand-light px-3.5 py-1.5 rounded-full mb-4">Features</span>
+        <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">One App. Every Source.</h2>
+        <p class="text-gray-500 mt-4 max-w-lg mx-auto text-lg">Whether it's a voice memo, a meeting, or a link, Mino organizes it semantically. Search by the idea, not just the word.</p>
+      </div>
+
+      <!-- ── Feature 1: Record & Transcribe ── -->
+      <div class="grid lg:grid-cols-2 gap-12 items-center mb-24">
+        <div class="fade-up order-2 lg:order-1">
+          <span class="inline-block text-brand text-[11.5px] font-bold uppercase tracking-[0.15em] bg-brand-light px-3 py-1 rounded-full mb-5">Step 1</span>
+          <h3 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-5 leading-tight">
+            Record &amp; <span class="text-brand">Transcribe</span><br />anything.
+          </h3>
+          <p class="text-gray-500 text-[16.5px] leading-relaxed mb-7">
+            Hit record and let Mino handle the rest. Multi-speaker detection identifies who said what, timestamped to the second. Works offline, no internet required.
+          </p>
+          <ul class="space-y-3.5">
+            <li class="flex items-center gap-3 text-gray-700 text-[15px]">
+              <div class="w-5 h-5 rounded-full bg-brand/10 flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 24 24" class="w-3 h-3 text-brand" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+              </div>
+              Multi-speaker diarization
+            </li>
+            <li class="flex items-center gap-3 text-gray-700 text-[15px]">
+              <div class="w-5 h-5 rounded-full bg-brand/10 flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 24 24" class="w-3 h-3 text-brand" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+              </div>
+              Real-time transcription with timestamps
+            </li>
+            <li class="flex items-center gap-3 text-gray-700 text-[15px]">
+              <div class="w-5 h-5 rounded-full bg-brand/10 flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 24 24" class="w-3 h-3 text-brand" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+              </div>
+              Works fully on-device — 100% offline
+            </li>
+            <li class="flex items-center gap-3 text-gray-700 text-[15px]">
+              <div class="w-5 h-5 rounded-full bg-brand/10 flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 24 24" class="w-3 h-3 text-brand" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+              </div>
+              99%+ transcription accuracy
+            </li>
+          </ul>
+        </div>
+        <div class="fade-up delay-1 order-1 lg:order-2 flex justify-center">
+          <div class="relative phone-glow">
+            <img src="A - SS3.png" alt="Mino recording and transcribing a meeting" class="relative w-[220px] md:w-[260px] rounded-[2.5rem] shadow-2xl shadow-gray-900/15" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Feature 2: AI Instant Notes ── -->
+      <div class="grid lg:grid-cols-2 gap-12 items-center mb-24">
+        <div class="fade-up flex justify-center">
+          <div class="relative phone-glow">
+            <img src="A - SS4.png" alt="Mino generating AI-powered instant notes" class="relative w-[220px] md:w-[260px] rounded-[2.5rem] shadow-2xl shadow-gray-900/15" />
+          </div>
+        </div>
+        <div class="fade-up delay-1">
+          <span class="inline-block text-brand text-[11.5px] font-bold uppercase tracking-[0.15em] bg-brand-light px-3 py-1 rounded-full mb-5">Step 2</span>
+          <h3 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-5 leading-tight">
+            Get <span class="text-brand">Instant Notes</span><br />with AI-Power Insights.
+          </h3>
+          <p class="text-gray-500 text-[16.5px] leading-relaxed mb-7">
+            Mino doesn't just transcribe — it thinks. Auto-generates Cornell Notes, quizzes, and flashcards from your recordings. Notes are ready before you leave the room.
+          </p>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="bg-white border border-gray-200 rounded-2xl p-4 text-center hover:border-brand/30 hover:shadow-sm transition-all duration-200 cursor-pointer">
+              <div class="w-9 h-9 bg-brand-light rounded-xl flex items-center justify-center mx-auto mb-2">
+                <svg viewBox="0 0 24 24" class="w-5 h-5 text-brand" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z"/>
+                </svg>
+              </div>
+              <div class="text-[12.5px] font-semibold text-gray-700">Cornell Notes</div>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-2xl p-4 text-center hover:border-brand/30 hover:shadow-sm transition-all duration-200 cursor-pointer">
+              <div class="w-9 h-9 bg-brand-light rounded-xl flex items-center justify-center mx-auto mb-2">
+                <svg viewBox="0 0 24 24" class="w-5 h-5 text-brand" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"/>
+                </svg>
+              </div>
+              <div class="text-[12.5px] font-semibold text-gray-700">Quizzes</div>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-2xl p-4 text-center hover:border-brand/30 hover:shadow-sm transition-all duration-200 cursor-pointer">
+              <div class="w-9 h-9 bg-brand-light rounded-xl flex items-center justify-center mx-auto mb-2">
+                <svg viewBox="0 0 24 24" class="w-5 h-5 text-brand" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.429 9.75 2.25 12l4.179 2.25m0-4.5 5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0 4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0-5.571 3-5.571-3"/>
+                </svg>
+              </div>
+              <div class="text-[12.5px] font-semibold text-gray-700">Flashcards</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Feature 3: Ask AI ── -->
+      <div class="grid lg:grid-cols-2 gap-12 items-center mb-24">
+        <div class="fade-up order-2 lg:order-1">
+          <span class="inline-block text-brand text-[11.5px] font-bold uppercase tracking-[0.15em] bg-brand-light px-3 py-1 rounded-full mb-5">Step 3</span>
+          <h3 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-5 leading-tight">
+            Ask <span class="text-brand">AI</span> about<br />your Notes.
+          </h3>
+          <p class="text-gray-500 text-[16.5px] leading-relaxed mb-7">
+            Your notes become a searchable second brain. Ask questions in plain language and get instant, cited answers from your own recordings.
+          </p>
+          <!-- Chat preview -->
+          <div class="bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
+            <div class="flex items-start gap-2.5">
+              <div class="w-7 h-7 bg-brand rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-white" fill="currentColor"><path d="M12 2a10 10 0 1 1 0 20A10 10 0 0 1 12 2z"/></svg>
+              </div>
+              <div class="bg-brand-light text-brand text-[13px] font-medium px-4 py-2.5 rounded-2xl rounded-tl-sm max-w-[260px]">
+                Hello! Ask me anything about your notes.
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <div class="bg-gray-100 text-gray-700 text-[13px] px-4 py-2.5 rounded-2xl rounded-tr-sm max-w-[260px]">
+                What's the 3-step action plan from today's meeting?
+              </div>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <div class="w-7 h-7 bg-brand rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-white" fill="currentColor"><path d="M12 2a10 10 0 1 1 0 20A10 10 0 0 1 12 2z"/></svg>
+              </div>
+              <div class="bg-brand-light text-brand text-[13px] font-medium px-4 py-2.5 rounded-2xl rounded-tl-sm max-w-[260px]">
+                1. Research SEO keywords (Sarah)<br/>2. Confirm $15k budget with Lisa<br/>3. Send plan to team by Friday
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fade-up delay-1 order-1 lg:order-2 flex justify-center">
+          <div class="relative phone-glow">
+            <img src="A - SS5.png" alt="Ask AI about your notes" class="relative w-[220px] md:w-[260px] rounded-[2.5rem] shadow-2xl shadow-gray-900/15" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Feature 4: Share & Export ── -->
+      <div class="grid lg:grid-cols-2 gap-12 items-center mb-24">
+        <div class="fade-up flex justify-center">
+          <div class="relative phone-glow">
+            <img src="A - SS6.png" alt="Share and export notes to Notion, Slack, and more" class="relative w-[220px] md:w-[260px] rounded-[2.5rem] shadow-2xl shadow-gray-900/15" />
+          </div>
+        </div>
+        <div class="fade-up delay-1">
+          <span class="inline-block text-brand text-[11.5px] font-bold uppercase tracking-[0.15em] bg-brand-light px-3 py-1 rounded-full mb-5">Workflow</span>
+          <h3 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-5 leading-tight">
+            Share &amp; <span class="text-brand">Export</span><br />your Notes.
+          </h3>
+          <p class="text-gray-500 text-[16.5px] leading-relaxed mb-7">
+            Send notes to Notion, Slack, Google Docs, or export as a clean PDF in one tap. Your knowledge, everywhere you work.
+          </p>
+          <div class="flex flex-wrap gap-2.5">
+            <span class="bg-white border border-gray-200 text-gray-700 text-[13px] font-medium px-4 py-2 rounded-xl shadow-sm">Notion</span>
+            <span class="bg-white border border-gray-200 text-gray-700 text-[13px] font-medium px-4 py-2 rounded-xl shadow-sm">Slack</span>
+            <span class="bg-white border border-gray-200 text-gray-700 text-[13px] font-medium px-4 py-2 rounded-xl shadow-sm">Google Meet</span>
+            <span class="bg-white border border-gray-200 text-gray-700 text-[13px] font-medium px-4 py-2 rounded-xl shadow-sm">Zoom</span>
+            <span class="bg-white border border-gray-200 text-gray-700 text-[13px] font-medium px-4 py-2 rounded-xl shadow-sm">WhatsApp</span>
+            <span class="bg-white border border-gray-200 text-gray-700 text-[13px] font-medium px-4 py-2 rounded-xl shadow-sm">Export PDF</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Feature 5: Multi-language ── -->
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div class="fade-up order-2 lg:order-1">
+          <span class="inline-block text-brand text-[11.5px] font-bold uppercase tracking-[0.15em] bg-brand-light px-3 py-1 rounded-full mb-5">Global</span>
+          <h3 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-5 leading-tight">
+            Transcribe &amp; <span class="text-brand">Translate</span><br />in 50+ languages.
+          </h3>
+          <p class="text-gray-500 text-[16.5px] leading-relaxed mb-7">
+            Record in any language and get notes in yours. Mino handles multilingual meetings with ease — perfect for international teams and students.
+          </p>
+          <div class="grid grid-cols-3 gap-2 text-[13px]">
+            <div class="bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 font-medium flex items-center gap-2">
+              <span>🇩🇪</span> German
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 font-medium flex items-center gap-2">
+              <span>🇫🇷</span> French
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 font-medium flex items-center gap-2">
+              <span>🇬🇧</span> English
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 font-medium flex items-center gap-2">
+              <span>🇪🇸</span> Spanish
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 font-medium flex items-center gap-2">
+              <span>🇯🇵</span> Japanese
+            </div>
+            <div class="bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 font-medium flex items-center gap-2">
+              <span>🇨🇳</span> Chinese
+            </div>
+          </div>
+        </div>
+        <div class="fade-up delay-1 order-1 lg:order-2 flex justify-center">
+          <div class="relative phone-glow">
+            <img src="A - SS7.png" alt="Transcribe and translate in multiple languages" class="relative w-[220px] md:w-[260px] rounded-[2.5rem] shadow-2xl shadow-gray-900/15" />
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       ZERO FRICTION / SPEED
+  ═══════════════════════════════════════════ -->
+  <section class="py-24 bg-white">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-14 fade-up">
+        <span class="inline-block text-brand text-[12px] font-bold uppercase tracking-[0.15em] bg-brand-light px-3.5 py-1.5 rounded-full mb-4">Speed</span>
+        <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">Zero-Friction Entry.</h2>
+        <p class="text-gray-500 mt-4 text-lg">Designed by Product Owners, for Power Users.</p>
+      </div>
+      <div class="grid md:grid-cols-3 gap-5">
+
+        <!-- Card 1 -->
+        <div class="fade-up bg-[#F8FAFF] border border-gray-100 rounded-3xl p-8 hover:border-brand/25 hover:shadow-md transition-all duration-200 cursor-pointer">
+          <div class="w-12 h-12 bg-brand-light rounded-2xl flex items-center justify-center mb-6">
+            <svg viewBox="0 0 24 24" class="w-6 h-6 text-brand" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">One-Tap Record</h3>
+          <p class="text-gray-500 leading-relaxed text-[15px]">Start capturing from your lock screen with the Quick Tile widget. Never miss a lightbulb moment again.</p>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="fade-up delay-1 bg-[#F8FAFF] border border-gray-100 rounded-3xl p-8 hover:border-brand/25 hover:shadow-md transition-all duration-200 cursor-pointer">
+          <div class="w-12 h-12 bg-brand-light rounded-2xl flex items-center justify-center mb-6">
+            <svg viewBox="0 0 24 24" class="w-6 h-6 text-brand" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Share Extension</h3>
+          <p class="text-gray-500 leading-relaxed text-[15px]">Save content from Slack, Safari, or any app directly to Mino. Your knowledge hub is always one tap away.</p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="fade-up delay-2 bg-[#F8FAFF] border border-gray-100 rounded-3xl p-8 hover:border-brand/25 hover:shadow-md transition-all duration-200 cursor-pointer">
+          <div class="w-12 h-12 bg-brand-light rounded-2xl flex items-center justify-center mb-6">
+            <svg viewBox="0 0 24 24" class="w-6 h-6 text-brand" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-3">Instant Processing</h3>
+          <p class="text-gray-500 leading-relaxed text-[15px]">Notes are generated in real-time. Walk out of any meeting with a clean Cornell summary already waiting.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       PRIVACY & TRUST
+  ═══════════════════════════════════════════ -->
+  <section id="privacy" class="py-24 bg-gradient-to-br from-brand via-[#1560DE] to-blue-700 overflow-hidden relative">
+    <!-- Decorative blob -->
+    <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-6xl mx-auto px-6 relative">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+
+        <div class="text-white fade-up">
+          <span class="inline-block text-blue-200 text-[11.5px] font-bold uppercase tracking-[0.15em] border border-white/20 px-3 py-1 rounded-full mb-6">Privacy First</span>
+          <h2 class="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight leading-tight">
+            100% Private.<br />100% Secure.
+          </h2>
+          <p class="text-blue-100 text-[17px] leading-relaxed mb-10 max-w-lg">
+            Your meetings, lectures, and ideas are yours alone. Mino processes audio on-device — nothing leaves your phone without your explicit permission.
+          </p>
+          <ul class="space-y-4">
+            <li class="flex items-center gap-3.5">
+              <div class="w-6 h-6 bg-white/15 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+              </div>
+              <span class="text-white text-[15.5px] font-medium">On-device AI — audio never leaves your phone</span>
+            </li>
+            <li class="flex items-center gap-3.5">
+              <div class="w-6 h-6 bg-white/15 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+              </div>
+              <span class="text-white text-[15.5px] font-medium">End-to-end encrypted sync</span>
+            </li>
+            <li class="flex items-center gap-3.5">
+              <div class="w-6 h-6 bg-white/15 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+              </div>
+              <span class="text-white text-[15.5px] font-medium">Zero data sold to third parties — ever</span>
+            </li>
+            <li class="flex items-center gap-3.5">
+              <div class="w-6 h-6 bg-white/15 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+              </div>
+              <span class="text-white text-[15.5px] font-medium">GDPR &amp; CCPA compliant</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="flex justify-center fade-up delay-1">
+          <div class="relative phone-glow">
+            <img src="A - SS2.png" alt="Mino 100% Private and Secure recording" class="relative w-[220px] md:w-[260px] rounded-[2.5rem] shadow-2xl shadow-black/20" />
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       WHO IT'S FOR
+  ═══════════════════════════════════════════ -->
+  <section class="py-24 bg-[#F8FAFF]">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-14 fade-up">
+        <span class="inline-block text-brand text-[12px] font-bold uppercase tracking-[0.15em] bg-brand-light px-3.5 py-1.5 rounded-full mb-4">Built For Everyone</span>
+        <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">Built for every mind.</h2>
+        <p class="text-gray-500 mt-4 text-lg max-w-md mx-auto">Whether you process fast or slow, Mino adapts to how you think.</p>
+      </div>
+      <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+
+        <div class="fade-up bg-white rounded-3xl p-7 border border-gray-100 text-center hover:border-brand/30 hover:shadow-md transition-all duration-200 cursor-pointer">
+          <div class="w-12 h-12 bg-brand-light rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg viewBox="0 0 24 24" class="w-6 h-6 text-brand" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 3.741-1.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-gray-900 text-[17px] mb-1.5">Students</h3>
+          <p class="text-gray-500 text-[13.5px] leading-relaxed">Capture every lecture detail. Auto-generate flashcards for exam prep.</p>
+        </div>
+
+        <div class="fade-up delay-1 bg-white rounded-3xl p-7 border border-gray-100 text-center hover:border-brand/30 hover:shadow-md transition-all duration-200 cursor-pointer">
+          <div class="w-12 h-12 bg-brand-light rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg viewBox="0 0 24 24" class="w-6 h-6 text-brand" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-gray-900 text-[17px] mb-1.5">Professionals</h3>
+          <p class="text-gray-500 text-[13.5px] leading-relaxed">Run smarter meetings. Get action items and summaries instantly.</p>
+        </div>
+
+        <div class="fade-up delay-2 bg-white rounded-3xl p-7 border border-gray-100 text-center hover:border-brand/30 hover:shadow-md transition-all duration-200 cursor-pointer">
+          <div class="w-12 h-12 bg-brand-light rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg viewBox="0 0 24 24" class="w-6 h-6 text-brand" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-gray-900 text-[17px] mb-1.5">ADHD Minds</h3>
+          <p class="text-gray-500 text-[13.5px] leading-relaxed">Capture ideas before they vanish. No typing, no friction, just record.</p>
+        </div>
+
+        <div class="fade-up delay-3 bg-white rounded-3xl p-7 border border-gray-100 text-center hover:border-brand/30 hover:shadow-md transition-all duration-200 cursor-pointer">
+          <div class="w-12 h-12 bg-brand-light rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg viewBox="0 0 24 24" class="w-6 h-6 text-brand" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 1-6.23-.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-gray-900 text-[17px] mb-1.5">Researchers</h3>
+          <p class="text-gray-500 text-[13.5px] leading-relaxed">Organize sources semantically. Search by idea, not just keyword.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       TESTIMONIALS
+  ═══════════════════════════════════════════ -->
+  <section class="py-24 bg-white">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="text-center mb-14 fade-up">
+        <span class="inline-block text-brand text-[12px] font-bold uppercase tracking-[0.15em] bg-brand-light px-3.5 py-1.5 rounded-full mb-4">Testimonials</span>
+        <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">Loved by 1M+ people.</h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-5">
+
+        <div class="fade-up bg-[#F8FAFF] border border-gray-100 rounded-3xl p-8">
+          <div class="flex gap-0.5 mb-4">
+            <svg viewBox="0 0 24 24" class="w-4.5 h-4.5 w-[18px] h-[18px] text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="text-gray-700 leading-relaxed mb-6 text-[15px]">"Mino has completely changed how I run standups. The Cornell Notes format is exactly what I needed — structured, scannable, and ready to share with the team in 30 seconds."</p>
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-brand rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">S</div>
+            <div>
+              <p class="font-bold text-gray-900 text-[14px]">Sarah K.</p>
+              <p class="text-gray-400 text-[12.5px]">Product Manager, Stripe</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="fade-up delay-1 bg-[#F8FAFF] border border-gray-100 rounded-3xl p-8">
+          <div class="flex gap-0.5 mb-4">
+            <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="text-gray-700 leading-relaxed mb-6 text-[15px]">"I record every lecture and have perfect Cornell notes waiting by the time I get home. The flashcard feature alone is worth the download. My GPA went up half a point."</p>
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">J</div>
+            <div>
+              <p class="font-bold text-gray-900 text-[14px]">James T.</p>
+              <p class="text-gray-400 text-[12.5px]">Med Student, Johns Hopkins</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="fade-up delay-2 bg-[#F8FAFF] border border-gray-100 rounded-3xl p-8">
+          <div class="flex gap-0.5 mb-4">
+            <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-yellow-400" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <p class="text-gray-700 leading-relaxed mb-6 text-[15px]">"The multilingual support is incredible. I attend meetings in English and get summaries in Chinese. Zero friction, perfect accuracy. The privacy aspect sealed the deal for me."</p>
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">L</div>
+            <div>
+              <p class="font-bold text-gray-900 text-[14px]">Liu W.</p>
+              <p class="text-gray-400 text-[12.5px]">Software Engineer, Singapore</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       FINAL CTA
+  ═══════════════════════════════════════════ -->
+  <section id="download" class="py-28 bg-gradient-to-b from-[#F8FAFF] via-[#EBF3FF] to-white relative overflow-hidden">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-brand/8 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- Floating phone left (desktop only) -->
+    <div class="hidden lg:block absolute left-6 bottom-12 opacity-80 pointer-events-none">
+      <img src="A - SS8.png" alt="Mino - Never take notes again" class="w-[180px] rounded-[2rem] shadow-xl shadow-gray-900/10 rotate-[-6deg]" />
+    </div>
+
+    <div class="max-w-4xl mx-auto px-6 text-center relative">
+      <div class="fade-up">
+        <!-- App icon -->
+        <div class="w-20 h-20 bg-brand rounded-[22px] flex items-center justify-center mx-auto mb-8 shadow-xl shadow-brand/30">
+          <svg viewBox="0 0 24 24" class="w-10 h-10 text-white" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3z"/>
+          </svg>
+        </div>
+        <h2 class="text-5xl md:text-[62px] font-extrabold text-gray-900 tracking-tight leading-[1.1] mb-6">
+          Never Take<br /><span class="text-gradient">Notes Again.</span>
+        </h2>
+        <p class="text-gray-500 text-xl mb-10 max-w-md mx-auto leading-relaxed">
+          Join over 1 million people who trust Mino to capture, organize, and recall every idea.
+        </p>
+        <div class="flex flex-wrap gap-4 justify-center mb-6">
+          <a href="https://apps.apple.com/us/app/mino-note-taker-voice-notes/id6723891452" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3.5 bg-gray-900 hover:bg-gray-800 text-white px-8 py-[18px] rounded-[16px] transition-colors duration-200 cursor-pointer shadow-xl shadow-gray-900/25">
+            <svg viewBox="0 0 24 24" class="w-7 h-7 flex-shrink-0" fill="currentColor">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+            </svg>
+            <div class="text-left">
+              <div class="text-[12px] opacity-60 leading-none mb-1">Download on the</div>
+              <div class="text-[16px] font-bold leading-none">App Store</div>
+            </div>
+          </a>
+          <a href="https://play.google.com/store/apps/details?id=co.vulcanlabs.ainotetaker&pli=1" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3.5 bg-gray-900 hover:bg-gray-800 text-white px-8 py-[18px] rounded-[16px] transition-colors duration-200 cursor-pointer shadow-xl shadow-gray-900/25">
+            <svg viewBox="0 0 24 24" class="w-7 h-7 flex-shrink-0" fill="currentColor">
+              <path d="M3.18 23.73c.28.16.59.22.91.18l13.07-7.57-2.9-2.9-11.08 10.29zm16.49-10.85L16.96 11l-3.14 3.14 2.9 2.9 2.95-1.71c.84-.49.84-1.96 0-2.45zM2.11 1.05C1.82 1.36 1.67 1.82 1.67 2.4V21.6c0 .58.15 1.04.44 1.35l.07.07L13.27 12 2.18.98l-.07.07zm11.9 10.21L3.18 1.27c-.28-.16-.59-.22-.91-.18l13.07 7.57-2.33 2.6z"/>
+            </svg>
+            <div class="text-left">
+              <div class="text-[12px] opacity-60 leading-none mb-1">Get it on</div>
+              <div class="text-[16px] font-bold leading-none">Google Play</div>
+            </div>
+          </a>
+        </div>
+        <p class="text-gray-400 text-[13.5px]">Free to download &nbsp;·&nbsp; No credit card required &nbsp;·&nbsp; iOS &amp; Android</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════ -->
+  <footer class="bg-gray-950 text-gray-400 py-12">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <a href="#" class="flex items-center gap-2.5 cursor-pointer">
+          <div class="w-8 h-8 bg-brand rounded-[10px] flex items-center justify-center">
+            <svg viewBox="0 0 24 24" class="w-[18px] h-[18px] text-white" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3z"/>
+            </svg>
+          </div>
+          <span class="font-extrabold text-white text-[17px] tracking-tight">Mino</span>
+        </a>
+        <div class="flex gap-6 text-[13.5px]">
+          <a href="privacy-policy.html" class="hover:text-white transition-colors duration-150 cursor-pointer">Privacy Policy</a>
+          <a href="terms-of-service.html" class="hover:text-white transition-colors duration-150 cursor-pointer">Terms of Service</a>
+          <a href="contact.html" class="hover:text-white transition-colors duration-150 cursor-pointer">Contact</a>
+          <a href="blog.html" class="hover:text-white transition-colors duration-150 cursor-pointer">Blog</a>
+        </div>
+        <p class="text-[13px] text-gray-600">© 2025 Mino. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- ═══════════════════════════════════════════
+       SCROLL ANIMATION SCRIPT
+  ═══════════════════════════════════════════ -->
+  <script>
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+    );
+    document.querySelectorAll('.fade-up').forEach((el) => observer.observe(el));
+  </script>
+
+</body>
+</html>
